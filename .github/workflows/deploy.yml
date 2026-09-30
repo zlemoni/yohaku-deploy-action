@@ -142,6 +142,7 @@ jobs:
           echo "sha_short=$sha_short" >> "$GITHUB_OUTPUT"
           echo "branch=$branch_name" >> "$GITHUB_OUTPUT"
 
+
   deploy:
     name: Deploy artifact
     runs-on: ubuntu-latest
