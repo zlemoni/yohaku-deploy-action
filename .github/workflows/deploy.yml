@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: innei-dev/Yohaku
+          repository: ${{ env.SOURCE_REPO }}
           token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
           fetch-depth: 0
           lfs: true
@@ -112,9 +112,10 @@ jobs:
           ${{ env.BUILD_COMMAND }}
           cd apps/web/.next
           rm -rf cache
-          cp -r ../public ./standalone/public
-          mv ./static ./standalone/apps/web/.next/static
-          cd ./standalone
+          test -f "./${STANDALONE_SUBPATH}/server.js"
+          cp -r ../public "./${STANDALONE_SUBPATH}/public"
+          mv ./static "./${STANDALONE_SUBPATH}/.next/static"
+          cd "./${STANDALONE_SUBPATH}"
           echo ';process.title = "Yohaku (NextJS)"' >> server.js
           cd "$GITHUB_WORKSPACE"
           mkdir -p assets
@@ -131,7 +132,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: assets
-          key: ${{ github.run_number }}-release
+          key: ${{ github.run_id }}-release
 
       - name: Store artifact commit version
         shell: bash
@@ -157,7 +158,8 @@ jobs:
         with:
           path: |
             assets
-          key: ${{ github.run_number }}-release
+          key: ${{ github.run_id }}-release
+          fail-on-cache-miss: true
       - name: Move assets to root
         run: mv assets/release.zip release.zip
 
@@ -265,4 +267,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: ${{ github.ref_name }}
